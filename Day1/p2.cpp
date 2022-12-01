@@ -67,16 +67,19 @@ void updateMax(uint32_t calories) {
     }
 }
 
+// Update the mostCalories value and cascade the current values downwards
 void updateMost(uint32_t calories) {
     updateSecondMost(mostCalories);
     mostCalories = calories;
 }
 
+// Update the secondMostCalories value and cascade the current value downwards
 void updateSecondMost(uint32_t calories) {
     updateThirdMost(secondMostCalories);
     secondMostCalories = calories;
 }
 
+// Update the thirdMostCalories value
 void updateThirdMost(uint32_t calories) {
     thirdMostCalories = calories;
 }
