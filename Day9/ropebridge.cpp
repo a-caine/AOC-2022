@@ -1,6 +1,7 @@
 #include "filereader.h"
 #include <iostream>
 #include <vector>
+#include <set>
 
 enum direction {
     up = 0,
@@ -9,38 +10,39 @@ enum direction {
     left = 3
 };
 
-std::vector<std::pair<int, int>> previousPositions;
+// Sets to hold the previous positions of the first and ninth knots
+std::set<std::pair<int, int>> previousPositions;
+std::set<std::pair<int, int>> previousPositionsTen;
 
-std::vector<std::pair<int, int>> previousPositionsTen;
-
+// Holds the list of knots
 std::pair<int, int> positions[9];
 
-void printPosition(std::pair<int, int> pos);
-bool positionUnique(std::pair<int,int> position);
-bool positionUnique10(std::pair<int,int> position);
-void moveHeadPosition(std::pair<int,int> *head, std::pair<int,int> *tail, direction dir, int steps);
+void moveHeadPosition(std::pair<int,int> *head, direction dir, int steps);
 void moveTail(std::pair<int,int> *head, std::pair<int,int> *tail);
+void printPositionBoard(std::pair<int, int> *head);
 int uniquePositions = 1;
-int uniquePositions10 = 1;
+int uniquePositions10 = 0;
 
+// File reader to read input
 FileReader fr("input.txt");
 
 int main() {
 
-    std::pair<int, int> headPos, tailPos;
+    // Keep track of the head of the rope
+    std::pair<int, int> headPos;
     
-    
-    previousPositions.push_back(tailPos);
-    previousPositionsTen.push_back(tailPos);
+    // Insert the default position of the first knot into the map
+    previousPositions.insert(std::pair<int, int>(0,0));
 
-    // Both the headPos and tailPos start at 0,0
-
+    // A string to read the lines of input into
     std::string inputLine;
+
+    // Print the initial state of the board
+    printPositionBoard(&headPos);
 
     // Start reading the instructions
     while (fr.readLine(&inputLine)) {
         // Parse the string into the direction and the number
-
         int numSteps = stoi(inputLine.substr(inputLine.find_first_of(' ')));
         char dir = inputLine.at(0);
 
@@ -49,131 +51,138 @@ int main() {
         switch (dir)
         {
         case 'U':
-            moveHeadPosition(&headPos, &tailPos, up, numSteps);
+            moveHeadPosition(&headPos, up, numSteps);
             break;
         case 'D':
-            moveHeadPosition(&headPos, &tailPos, down, numSteps);
+            moveHeadPosition(&headPos, down, numSteps);
             break;
         case 'L':
-            moveHeadPosition(&headPos, &tailPos, left, numSteps);
+            moveHeadPosition(&headPos, left, numSteps);
             break;
         case 'R':
-            moveHeadPosition(&headPos, &tailPos, right, numSteps);
+            moveHeadPosition(&headPos, right, numSteps);
             break;
         }
+
+        printPositionBoard(&headPos);
     }
 
-    std::cout << "Number of unique positions: " << uniquePositions << std::endl;
-    std::cout << "Number of unique positions with a rope length of 10: " << uniquePositions10 << std::endl;
+    std::cout << "Number of unique positions: " << previousPositions.size() << std::endl;
+    std::cout << "Number of unique positions with a rope length of 10: " << previousPositionsTen.size() << std::endl;
+    std::cout << "Number of increases in thingy: " << uniquePositions10 << std::endl;
+
+    //for (int _ = 0; _ < previousPositionsTen.size(); _++) {
+    //    printPosition(previousPositionsTen.at(_));
+    //}
 
     return EXIT_SUCCESS;
 }
 
-void moveHeadPosition(std::pair<int,int> *head, std::pair<int,int> *tail, direction dir, int steps) {
+void moveHeadPosition(std::pair<int,int> *head, direction dir, int steps) {
     // Move the head a set number of steps in a given direction
     int xDiff, yDiff;
     switch (dir)
     {
     case up:
         yDiff = 1;
-        xDiff = 0;
         break;
     case down:
         yDiff = -1;
-        xDiff = 0;
         break;
     case left:
         xDiff = -1;
-        yDiff = 0;
         break;
     case right:
         xDiff = 1;
-        yDiff = 0;
-        break;
-    
-    default:
-        xDiff = 0;
-        yDiff = 0;
         break;
     }
 
+    // Move in this direction the correct number of times
     for (int s = 0; s < steps; s++) {
+
         // Firstly move the head
         head->first += xDiff;
         head->second += yDiff;
 
         // Then update the tail
-        moveTail(head, tail);
 
         // Then update the 10 knot tail
         moveTail(head, &positions[0]);
 
+        
         for (int _ = 1; _ < 9; _++) {
             moveTail(&positions[_ - 1], &positions[_]);
         }
+        
 
-        std::cout << "Moved tail (9) to position: ";
-        printPosition(positions[8]);
-
-        // Then check if the tail has moved to a new position
-        if (positionUnique(*tail)) {
-            // If unique increase the counter
-            uniquePositions++;
-            // And place the position into the array
-            previousPositions.push_back(*tail);
-        }
-
-        if (positionUnique10(positions[8])) {
-            uniquePositions10++;
-            previousPositionsTen.push_back(positions[8]);
-        }
+        previousPositions.insert(positions[0]);
+        previousPositionsTen.insert(positions[8]);
     }
 }
 
 void moveTail(std::pair<int,int> *head, std::pair<int,int> *tail) {
-    // If the tail is still within one tile of the head then do not move it
-
     int hDist = head->first - tail->first;
     int vDist = head->second - tail->second;
 
+    // If the tail is still within one tile of the head then do not move it
     if (abs(hDist) < 2 && abs(vDist) < 2) return;
+    
 
-    // If we have a distance of more than 2 then figure out where the tail moves
-    if (hDist > 1) {
-        tail->first = head->first - 1;
-        tail->second = head->second;
-    } else if (hDist < -1) {
-        tail->first = head->first + 1;
-        tail->second = head->second;
-    } else if (vDist > 1) {
-        tail->second = head->second - 1;
-        tail->first = head->first;
-    } else if (vDist < -1) {
-        tail->second = head->second + 1;
-        tail->first = head->first;
-    }
+    // Otherwise move the tail to follow the head
+    if (hDist > 0) tail->first += 1;
+    else if (hDist < 0) tail->first -= 1;
+
+    if (vDist > 0) tail->second += 1;
+    else if (vDist < 0) tail->second -= 1;
 }
 
-bool positionUnique(std::pair<int,int> position) {
 
-    for (int _ = 0; _ < previousPositions.size(); _++) {
-        if (position == previousPositions.at(_)) {
-            return false;
+void printPositionBoard(std::pair<int, int> *head) {
+    //First find the maximum and minimum positions
+    int minX, maxX, minY, maxY;
+
+    minX = positions[0].first;
+    maxX = positions[0].first;
+
+    minY = positions[0].second;
+    maxY = positions[0].second;
+
+    for (int _ = 1; _ < 9; _++) {
+        if (positions[_].first < minX) minX = positions[_].first;
+
+        if (positions[_].first > maxX) maxX = positions[_].first;
+
+        if (positions[_].second < minY) minY = positions[_].second;
+
+        if (positions[_].second > maxY) maxY = positions[_].second;
+    }
+
+    std::cout << "Printing board with min/max x: " << minX << ',' << maxX << " and min/max y: " << minY << ',' << maxY << std::endl;
+    
+    for (int y = 20; y >= -10; y--) {
+        for (int x = -11; x <= 20; x++) {
+            int positionsIndex = -1;
+
+            for (int _ = 8; _ >= 0; _--) {
+                if (positions[_].first == x && positions[_].second == y) {
+                    positionsIndex = _;
+                }
+            }
+
+            if (head->first == x && head->second == y) {
+                std::cout << "H";
+            } else if (x == 0 && y == 0) {
+                std::cout << "s";
+            } else if (positionsIndex == -1) {
+                std::cout << ".";
+            } else {
+                std::cout << (positionsIndex + 1);
+            }
+
         }
+        std::cout << std::endl;
     }
+    
 
-    return true;
-}
 
-bool positionUnique10(std::pair<int,int> position) {
-
-    for (int _ = 0; _ < previousPositionsTen.size(); _++) {
-        if (position == previousPositionsTen.at(_)) return false;
-    }
-
-    return true;
-}
-
-void printPosition(std::pair<int,int> pos) {
-    std::cout << '<' << pos.first << ',' << pos.second << '>' << std::endl;
 }
