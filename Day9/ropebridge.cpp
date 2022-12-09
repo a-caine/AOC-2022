@@ -20,8 +20,6 @@ std::pair<int, int> positions[9];
 void moveHeadPosition(std::pair<int,int> *head, direction dir, int steps);
 void moveTail(std::pair<int,int> *head, std::pair<int,int> *tail);
 void printPositionBoard(std::pair<int, int> *head);
-int uniquePositions = 1;
-int uniquePositions10 = 0;
 
 // File reader to read input
 FileReader fr("input.txt");
@@ -64,23 +62,20 @@ int main() {
             break;
         }
 
+        // Print the board after each step
         printPositionBoard(&headPos);
     }
 
-    std::cout << "Number of unique positions: " << previousPositions.size() << std::endl;
-    std::cout << "Number of unique positions with a rope length of 10: " << previousPositionsTen.size() << std::endl;
-    std::cout << "Number of increases in thingy: " << uniquePositions10 << std::endl;
-
-    //for (int _ = 0; _ < previousPositionsTen.size(); _++) {
-    //    printPosition(previousPositionsTen.at(_));
-    //}
+    std::cout << "Number of unique positions of the first knot (Part 1): " << previousPositions.size() << std::endl;
+    std::cout << "Number of unique positions of the ninth knot (Part 2): " << previousPositionsTen.size() << std::endl;
 
     return EXIT_SUCCESS;
 }
 
 void moveHeadPosition(std::pair<int,int> *head, direction dir, int steps) {
     // Move the head a set number of steps in a given direction
-    int xDiff, yDiff;
+    int xDiff = 0;
+    int yDiff = 0;
     switch (dir)
     {
     case up:
@@ -104,23 +99,22 @@ void moveHeadPosition(std::pair<int,int> *head, direction dir, int steps) {
         head->first += xDiff;
         head->second += yDiff;
 
-        // Then update the tail
-
         // Then update the 10 knot tail
         moveTail(head, &positions[0]);
 
-        
         for (int _ = 1; _ < 9; _++) {
             moveTail(&positions[_ - 1], &positions[_]);
         }
         
-
+        // Add the positions of the first knot and the 9th knot for parts 1 and 2
         previousPositions.insert(positions[0]);
         previousPositionsTen.insert(positions[8]);
     }
 }
 
+// Moves the tail by referencing the head
 void moveTail(std::pair<int,int> *head, std::pair<int,int> *tail) {
+    // Calculate the horizontal and vertical distance from head to tail
     int hDist = head->first - tail->first;
     int vDist = head->second - tail->second;
 
@@ -159,8 +153,9 @@ void printPositionBoard(std::pair<int, int> *head) {
 
     std::cout << "Printing board with min/max x: " << minX << ',' << maxX << " and min/max y: " << minY << ',' << maxY << std::endl;
     
-    for (int y = 20; y >= -10; y--) {
-        for (int x = -11; x <= 20; x++) {
+    // Then loop through the positions and print them onto a grid bounded by the maximum and minumum x and y positions
+    for (int y = maxY; y >= minY; y--) {
+        for (int x = minX; x <= maxX; x++) {
             int positionsIndex = -1;
 
             for (int _ = 8; _ >= 0; _--) {
@@ -183,6 +178,4 @@ void printPositionBoard(std::pair<int, int> *head) {
         std::cout << std::endl;
     }
     
-
-
 }
