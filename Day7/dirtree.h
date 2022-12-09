@@ -32,7 +32,7 @@ class DirTree {
         // Returns a pointer to the directories parent
         DirTree* getParent();
 
-        // Getter method for the sizeOnDisk variable
+        // Returns the size of the file on disk, or size of files in directory on disk
         uint32_t getSizeOnDisk();
 
         // Getter method for the dirName variable
