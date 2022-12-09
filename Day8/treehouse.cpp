@@ -13,9 +13,7 @@ enum direction {
 FileReader fr = FileReader("input.txt");
 
 int ctoi(char c);
-
 void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSize);
-
 int findViewingDistance(direction dir, int column, int row, int **trees, int arrSize, int treeHeight);
 
 int main() {
@@ -84,21 +82,20 @@ int main() {
 
     for (int r = 0; r < arrSize; r++) {
         for (int c = 0; c < arrSize; c++) {
+            // Find the scenic score for each position in the forest
             currScenicScore = findViewingDistance(North, c, r, trees, arrSize, trees[r][c]) * findViewingDistance(East, c, r, trees, arrSize, trees[r][c]) * findViewingDistance(South, c, r, trees, arrSize, trees[r][c]) * findViewingDistance(West, c, r, trees, arrSize, trees[r][c]);
-
-            std::cout << "Calculated scenic score for (" << r << ',' << c << "): " << currScenicScore << std::endl;
-
+            // Update the maximum scenic score if the current scenic score is higher
             if (currScenicScore > maxScenicScore) maxScenicScore = currScenicScore;
         }
     }
 
     std::cout << "Maximum scenic score: " << maxScenicScore << std::endl;
 
-
     return EXIT_SUCCESS;
 }
 
 void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSize) {
+    // Variables to track the tallest tree and the current height of the tree we are on
     int maxHeight, treeHeight;
 
     switch (dir)
@@ -110,7 +107,7 @@ void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSi
             // Work our way towards the center and set the trees to be visible
             for (int r = 0; r < arrSize; r++) {
                 treeHeight = trees[r][c];
-                // compare the current tree to the current highest tree, if greater it is visible
+                // compare the current tree to the current highest tree, if greater it is visible, if 9 break as no other tree will be visible
                 if (treeHeight > maxHeight) {
                     visibleTrees[r][c] = true;
                     if (treeHeight == 9) break;
@@ -126,7 +123,7 @@ void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSi
             // Work our way towards the center and set the trees to be visible
             for (int c = (arrSize - 1); c >= 0; c--) {
                 treeHeight = trees[r][c];
-                // compare the current tree to the current highest tree, if greater it is visible
+                // compare the current tree to the current highest tree, if greater it is visible, if 9 break as no other tree will be visible
                 if (treeHeight > maxHeight) {
                     visibleTrees[r][c] = true;
                     if (treeHeight == 9) break;
@@ -142,7 +139,7 @@ void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSi
             // Work our way towards the center and set the trees to be visible
             for (int r = (arrSize - 1); r >= 0; r--) {
                 treeHeight = trees[r][c];
-                // compare the current tree to the current highest tree, if greater it is visible
+                // compare the current tree to the current highest tree, if greater it is visible, if 9 break as no other tree will be visible
                 if (treeHeight > maxHeight) {
                     visibleTrees[r][c] = true;
                     if (treeHeight == 9) break;
@@ -158,7 +155,7 @@ void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSi
             // Work our way towards the center and set the trees to be visible
             for (int c = 0; c < arrSize; c++) {
                 treeHeight = trees[r][c];
-                // compare the current tree to the current highest tree, if greater it is visible
+                // compare the current tree to the current highest tree, if greater it is visible, if 9 break as no other tree will be visible
                 if (treeHeight > maxHeight) {
                     visibleTrees[r][c] = true;
                     if (treeHeight == 9) break;
@@ -171,57 +168,63 @@ void findVisibleTrees(direction dir, int **trees, bool **visibleTrees, int arrSi
 }
 
 int findViewingDistance(direction dir, int column, int row, int **trees, int arrSize, int treeHeight) {
+    // Keep track of the height of the tree in the array and the distance away from the initial tree we have gone
     int arrTreeHeight;
     int distance = 0;
-
-    std::cout << "Finding distance for tree at position (" << row << ',' << column << ") with direction: " << dir << std::endl;
 
     switch (dir)
     {
     case North:
-        // Work our way towards the center and set the trees to be visible
+        // Work our way outwards from the tree towards the edge
         for (int r = row - 1; r >= 0; r--) {
             arrTreeHeight = trees[r][column];
-            // compare the current tree to the current highest tree, if greater it is visible
+            // compare the current tree to the starting tree, if it is smaller then keep going
             if (arrTreeHeight < treeHeight) {
                 distance++;
             } else {
+                // If it is not smaller then increase the distance, but then break as no more trees are visible
                 distance++;
                 break;
             }
         }
         break;
     case East:
+        // Work our way outwards from the tree towards the edge
         for (int c = column + 1; c < arrSize; c++) {
             arrTreeHeight = trees[row][c];
-            // compare the current tree to the current highest tree, if greater it is visible
+            // compare the current tree to the starting tree, if it is smaller then keep going
             if (arrTreeHeight < treeHeight) {
                 distance++;
             } else {
+                // If it is not smaller then increase the distance, but then break as no more trees are visible
                 distance++;
                 break;
             }
         }
         break;
     case South:
+        // Work our way outwards from the tree towards the edge
         for (int r = row + 1; r < arrSize; r++) {
             arrTreeHeight = trees[r][column];
-            // compare the current tree to the current highest tree, if greater it is visible
+            // compare the current tree to the starting tree, if it is smaller then keep going
             if (arrTreeHeight < treeHeight) {
                 distance++;
             } else {
+                // If it is not smaller then increase the distance, but then break as no more trees are visible
                 distance++;
                 break;
             }
         }
         break;
     case West:
+        // Work our way outwards from the tree towards the edge
         for (int c = column - 1; c >= 0; c--) {
             arrTreeHeight = trees[row][c];
-            // compare the current tree to the current highest tree, if greater it is visible
+            // compare the current tree to the starting tree, if it is smaller then keep going
             if (arrTreeHeight < treeHeight) {
                 distance++;
             } else {
+                // If it is not smaller then increase the distance, but then break as no more trees are visible
                 distance++;
                 break;
             }
@@ -229,11 +232,11 @@ int findViewingDistance(direction dir, int column, int row, int **trees, int arr
         break;
     }
 
-    std::cout << "distance to another tree: " << distance << std::endl;
-
+    // Return the distance travelled
     return distance;
 }
 
+// Converts a character into its integer equivalent e.g. ctio('4') returns 4
 int ctoi(char c) {
     return (c - '0');
 }
